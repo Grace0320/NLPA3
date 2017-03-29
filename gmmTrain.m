@@ -1,4 +1,4 @@
-function data_mat = gmmTrain( dir_train, max_iter, epsilon, M )
+function gmms = gmmTrain( dir_train, max_iter, epsilon, M )
 % gmmTain
 %
 %  inputs:  dir_train  : a string pointing to the high-level
@@ -17,13 +17,13 @@ function data_mat = gmmTrain( dir_train, max_iter, epsilon, M )
 %                                          (:,:,i) is for i^th mixture
     
   DD = dir(dir_train);
-  num_speakers = length(DD);
+  num_speakers = length(DD) - 2;
   gmms = cell(1, num_speakers);
   
   for i = 3:length(DD)
       speaker_dir = DD(i);
       path = strcat(dir_train, speaker_dir.name,'/');
-      gmms(i-2) = {struct('name', speaker_dir.name)};
+      speaker_struct = struct('name', speaker_dir.name);
       mfccFiles = dir(fullfile(strcat(path,'*.mfcc'))) ;
       mfcc_mat = [];
       for j = 1:length(mfccFiles);
@@ -40,7 +40,13 @@ function data_mat = gmmTrain( dir_train, max_iter, epsilon, M )
           prevL = L;
           j = j + 1;
       end
+      
+      [speaker_struct(:).weights]=deal([theta{:,1}]);
+      [speaker_struct(:).means] = cell2mat(theta(:,2))';
+      [speaker_struct(:).cov] = cell2mat(theta(:,3));
+      gmms(i-2) = {speaker_struct};
   end
+  save( gmms, 'gmms', '-mat'); 
 end
 
 function theta = initTheta(mfcc_data, M )
@@ -57,7 +63,7 @@ function theta = initTheta(mfcc_data, M )
        [mu(i)] = {deal(mfcc_data(perm(i),:))} ;
     end
     
-    sigma_identity = ones(14, M);
+    sigma_identity = ones(1, 14);
     sigma = cell(M, 1);
     [sigma{:}] = deal(sigma_identity);
     theta = horzcat(omega, mu, sigma);
@@ -69,26 +75,11 @@ function [L, pmxt] = computeLikelihood(mfcc_data, theta, M)
     bmxt = zeros(M, num_feat_vecs);
     pmxt = zeros(M, num_feat_vecs);
     
-    static_bm_term = 7*log(2*pi);
     for m = 1:M % for each gaussian
         mu = theta{m, 2};
-        sigma = theta{m, 3};
-        
-        sigma_prod_term = 0.5 * log(prod(sigma(:, m)));
-        no_x_sum_term = 0;
-        for n = 1:14
-            no_x_sum_term = no_x_sum_term + mu(n)^2/sigma(n,m);
-        end
-                
+        sigma = theta{m, 3};                
         for t = 1:num_feat_vecs %for each vector
-           sum_term = 0;
-           x_vec = mfcc_data(t, :);
-           for n = 1:14 %for each feature
-               sum_term = sum_term + (0.5*x_vec(n)^2/sigma(n,m) - mu(n)*x_vec(n)/sigma(n,m));
-           end
-           
-           bmxt(m, t) = -sum_term - (0.5*no_x_sum_term + static_bm_term + sigma_prod_term);
-           
+           bmxt(m, t) = calc_bm(mfcc_data(t, :), mu, sigma);
         end
     end
     
@@ -100,21 +91,18 @@ function [L, pmxt] = computeLikelihood(mfcc_data, theta, M)
           pmxt(m, t) = omega * bmxt(m, t)/denom;
        end
     end
-     
     L = sum(log(sum(bsxfun(@times, bmxt, omega))));
 end
 
 function newTheta = updateParams(theta, mfcc, pmxt, M)
-    newTheta = theta
+    newTheta = theta;
     num_feat_vecs = size(mfcc, 1);
-    sum_vecs_m = sum(pmxt, 2)
-    sum_vecs_m(1)
-    num2cell(sum_vecs_m./num_feat_vecs)
-    newTheta{:,1} = num2cell(sum_vecs_m./num_feat_vecs)
+    sum_vecs_m = sum(pmxt, 2);
+    newTheta(:,1) = deal(num2cell(sum_vecs_m./num_feat_vecs));
     
     for m = 1:M
-        mu =  sum(diag(pmxt(m, :))* mfcc)/sum_vecs_m;
+        mu = sum(diag(pmxt(m, :)/sum_vecs_m(m))* mfcc);
         newTheta{m, 2} = mu;
-        newTheta{m, 3} = sum(diag(pmxt(m, :))* (mfcc.^2))./sum_vecs_m - mu.^2
+        newTheta{m, 3} = sum(diag(pmxt(m, :)./sum_vecs_m(m))* (mfcc.^2)) - mu.^2;
     end
 end
