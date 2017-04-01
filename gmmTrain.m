@@ -34,7 +34,7 @@ function gmms = gmmTrain( dir_train, max_iter, epsilon, M )
       prevL = -Inf ; 
       improvement = inf;
       while j <= max_iter && improvement >= epsilon
-          [L, pmxt] = computeLikelihood (mfcc_mat, theta, M);
+          [L, pmxt] = computeLikelihood_fulltheta (mfcc_mat, theta, M);
           theta = updateParams (theta, mfcc_mat, pmxt, M) ;
           improvement = L - prevL;
           prevL = L;
@@ -42,11 +42,11 @@ function gmms = gmmTrain( dir_train, max_iter, epsilon, M )
       end
       
       [speaker_struct(:).weights]=deal([theta{:,1}]);
-      [speaker_struct(:).means] = cell2mat(theta(:,2))';
+      [speaker_struct(:).means] = cell2mat(theta(:,2));
       [speaker_struct(:).cov] = cell2mat(theta(:,3));
       gmms(i-2) = {speaker_struct};
   end
-  save( gmms, 'gmms', '-mat'); 
+  save( 'gmms.mat', 'gmms', '-mat'); 
 end
 
 function theta = initTheta(mfcc_data, M )
@@ -68,30 +68,6 @@ function theta = initTheta(mfcc_data, M )
     [sigma{:}] = deal(sigma_identity);
     theta = horzcat(omega, mu, sigma);
     
-end
-
-function [L, pmxt] = computeLikelihood(mfcc_data, theta, M)
-    num_feat_vecs = size(mfcc_data, 1);
-    bmxt = zeros(M, num_feat_vecs);
-    pmxt = zeros(M, num_feat_vecs);
-    
-    for m = 1:M % for each gaussian
-        mu = theta{m, 2};
-        sigma = theta{m, 3};                
-        for t = 1:num_feat_vecs %for each vector
-           bmxt(m, t) = calc_bm(mfcc_data(t, :), mu, sigma);
-        end
-    end
-    
-    for m = 1:M
-       omega = theta{m, 1};
-       for t = 1:num_feat_vecs
-          bm_omega = bmxt(:, t).*[theta{:,1}]';
-          denom = sum(bm_omega,1);
-          pmxt(m, t) = omega * bmxt(m, t)/denom;
-       end
-    end
-    L = sum(log(sum(bsxfun(@times, bmxt, omega))));
 end
 
 function newTheta = updateParams(theta, mfcc, pmxt, M)
