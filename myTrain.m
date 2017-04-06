@@ -1,8 +1,10 @@
-dir_train = 'speechdata/Training/'
+dir_train = '/h/u1/cs401/speechdata/Training/'
 
 DD = dir(dir_train);
 num_speakers = length(DD) - 2;
 phns = struct;
+
+%collect phoneme data
 for i = 3:length(DD)
   speaker_dir = DD(i);
   path = strcat(dir_train,'/',speaker_dir.name,'/');

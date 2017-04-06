@@ -1,3 +1,5 @@
+talk2me username: gracecochrane
+
 2.3
 I created models with 10, 20, and 30 components to identify what happens to the accuracy - however, they all only got 1 speaker right,
 so I looked at their top5 accuracy, to see how many at least got the right answer in their top 5, and there was at least somewhat
@@ -20,5 +22,19 @@ When would model decide the utterance is from nobody it knows?
 Again it is likely possible to empirically determine a threshold likelihood below which the model just doesn't suit the data. 
 If the classifier calculates the likelihood of the utterance for all the speakers is below that threshold, it would determine
 that it is a new speaker.
+
+3.2
+Did not have time to vary parameters and do experiments.
+With all the default parameters, the models achieved classifying ~46% of phonemes correctly.
+
+3.3 Word error rates
+substitution error = 16.54% 
+insertion error = 4.23%
+deletion error = 5%
+Levenshtein distance = 25.77%
+
+Substitution error is three times as common as other types of errors.
+
+
 
  

@@ -11,9 +11,5 @@ function [ bmxt ] = calc_bm( x_vec, mu, sigma, d )
         sum_term = sum_term + ((x_vec(n)- mu(n))^2)/sigma(n);
     end
     bmxt = exp(-0.5*sum_term)/(pi_term*sigma_prod_term);
-    if isnan(bmxt)
-        'NAN!'
-    end
-
 end
 

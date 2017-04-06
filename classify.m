@@ -1,6 +1,15 @@
 function [accuracy, top5_accuracy] = classify( dir_test, mfccFiles, d, gmm, num_speakers, num_test_files, gmm_name, answers)
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
+%classifier: determines the 5 most likely speakers for each test file, and
+%reports the accuracy the models obtain against ground truth
+%   dir_test = directory with test files
+%   mfccFiles = an array of mfcc test files
+%   d = dimension of mfcc data
+%   gmm = gmm from gmmTrain
+%   num_speakers = number of training speakers
+%   num_test_files = number of test mfcc files
+%   gmm_name = name of gmm (for naming lik file)
+%   answers = array of actual speakers for test sequences
+
     total_correct = 0;
     total_top5_correct = 0;
     for i = 1:num_test_files

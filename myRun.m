@@ -1,11 +1,11 @@
-dir_test = 'speechdata/Testing/'
+dir_test = '/h/u1/cs401/speechdata/Testing/'
 phnFiles = dir(fullfile(strcat(dir_test,'*.phn'))) ;
 phnsTest = struct;
 totalPhones = 0;
 totalCorrectPhones = 0;
 HMMfields = fieldnames(phnsHMMs);
 for j = 1:length(phnFiles); %numtests
-     phnFile = strcat(path, phnFiles(j).name);
+     phnFile = strcat(dir_test, phnFiles(j).name)
      mfccFilename = strrep(phnFile, 'phn', 'mfcc');
      phnData = importdata(phnFile, ' ');
      mfccData = dlmread(mfccFilename);
@@ -22,10 +22,18 @@ for j = 1:length(phnFiles); %numtests
         phnSequence = mfccData(start:endIdx, :);
       
         est_phoneme = getLikeliestPhoneme(phnsHMMs, phnSequence');
-        if strcmp(est_phoneme, line{3}{1})
+        
+        if strcmp(line{3}{1}, 'h#')
+            truePhoneme = 'sil';
+        else
+            truePhoneme = line{3}{1};
+        end
+            
+        if strcmp(est_phoneme, truePhoneme)
             totalCorrectPhones = totalCorrectPhones + 1;
         end
      end
+     correctSoFar = totalCorrectPhones/totalPhones
 end
   
-correct_percent = totalCorrectPhones/totalPhones
+correct_percent = totalCorrectPhones/totalPhones * 100
