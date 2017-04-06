@@ -1,0 +1,24 @@
+2.3
+I created models with 10, 20, and 30 components to identify what happens to the accuracy - however, they all only got 1 speaker right,
+so I looked at their top5 accuracy, to see how many at least got the right answer in their top 5, and there was at least somewhat
+of a trend here - the 10 part GMM had a 13% accuracy rate, and the 20 and 30 part GMMs had a 20% rate. I think I either needed to run
+the training for more iterations or vary the the number of Gaussians more widely (ie 1, 10, 100) to see more of a trend, but I would
+expect accuracy in general to increase with the number of Gaussians, up to a point. 
+
+The same happened when I varied epsilon, so again I looked at the top 5 accuracy rate, where the results were somewhat unclear. 
+I used 1, 10, 100, and 1000 as my epsilons, and 1 had a 13% rate, 10 had 20%, 100 had 20%, and 1000 had 13% again. This last drop is
+likely due to performing less iterations - the epsilon limit kicked in before the iteration limit. For the epsilon=1 model, it
+was probably the reverse - the iterations kicked in before the iterative improvement could be brought below one.
+In general, if the were limitless iterations, I would expect smaller epsilons to yield higher accuracies.
+
+How to improve accuracy without adding data: 
+I imagine that it can be empirically determined what the best number of Gaussians is to use for speech. While not enough won't
+capture all the necessary details, too many will make the model too specific to the training data, and fail to identify new 
+data.
+
+When would model decide the utterance is from nobody it knows?
+Again it is likely possible to empirically determine a threshold likelihood below which the model just doesn't suit the data. 
+If the classifier calculates the likelihood of the utterance for all the speakers is below that threshold, it would determine
+that it is a new speaker.
+
+ 

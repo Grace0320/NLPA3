@@ -1,9 +1,9 @@
-function [L, pmxt] = computeLikelihood_fulltheta(mfcc_data, theta, M)
+function [L, pmxt] = computeLikelihood_fulltheta(mfcc_data, theta, M, d)
 % given parameter set theta, compute likelihood of mfcc_data vector set
 %
     omega = [theta{:,1}];
     mu = cell2mat(theta(:,2));
     sigma = cell2mat(theta(:,3));
-    [L, pmxt] = computeLikelihood_omega_mu_sigma(mfcc_data, omega, mu, sigma, M);
+    [L, pmxt] = computeLikelihood_omega_mu_sigma(mfcc_data, omega, mu, sigma, M, d);
     
 end
